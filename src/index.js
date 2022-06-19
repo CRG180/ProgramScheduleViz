@@ -1,11 +1,10 @@
-import * as d3 from "d3";
 
 // Svg element dimensions
 const width = 960;
 const height = 500;
 
 // Set up svg element
-const svg = d3.select("svg").attr("width", width).attr("height", height);
+const svg = d3.select("#chart").append("svg").attr("width", width).attr("height", height);
 
 // Make a bar chart
 const render = (countries) => {
@@ -22,8 +21,6 @@ const render = (countries) => {
   }
 
   function dragged(event, d) {
-    console.log(xScale(155));
-    console.log(d.start);
     var dx = event.x;
     var starting = xScale(d.start);
     var ending = xScale(d.population);
@@ -38,6 +35,44 @@ const render = (countries) => {
     d3.select(this).attr("r", "6").attr("fill", "red");
   }
 
+  //tooltip 
+  var div = d3.select("body").append("div")
+  .attr("class", "tooltip")
+  .style("opacity", 0);
+
+  var Tooltip = d3.select("#chart")
+    .append("div")
+    .style("opacity", 0)
+    .attr("class", "tooltip")
+    .style("background-color", "white")
+    .style("border", "solid")
+    .style("border-width", "2px")
+    .style("border-radius", "5px")
+    .style("padding", "5px")
+
+ // Three function that change the tooltip when user hover / move / leave a cell
+ var mouseover = function(d) {
+  Tooltip
+    .style("opacity", 1)
+  d3.select(this)
+    .style("stroke", "black")
+    .style("opacity", 1)
+}
+var mousemove = function(d) {
+  Tooltip
+    .html("The exact value of<br>this cell is: " + d.population)
+    .style("left", (d3.mouse(this)[0]+70) + "px")
+    .style("top", (d3.mouse(this)[1]) + "px")
+}
+var mouseleave = function(d) {
+  Tooltip
+    .style("opacity", 0)
+  d3.select(this)
+    .style("stroke", "none")
+    .style("opacity", 0.8)
+}
+
+            
   // Scales of the axes
 
   let xScale = d3.scaleLinear().domain([0, 26]).range([0, innerWidth]);
@@ -95,7 +130,23 @@ const render = (countries) => {
     .attr("y", (country) => yScale(country.country))
     .attr("x", (d) => xScale(d.start))
     .attr("width", (country) => xScale(country.population - country.start))
-    .attr("height", yScale.bandwidth());
+    .attr("height", yScale.bandwidth())
+    .on("mouseover", function(event,d) {
+      div.transition()
+        .duration(200)
+        .style("opacity", .9);
+      div.html("hello")
+        .style("left", (event.pageX) + "px")
+        .style("top", (event.pageY - 28) + "px");
+      })
+    .on("mouseout", function(d) {
+      div.transition()
+        .duration(500)
+        .style("opacity", 0);
+      });
+    //.on("mouseover", mouseover)
+    //.on("mousemove", mousemove)
+    //.on("mouseleave", mouseleave);
 
   // Plotting the action point
   g.selectAll("circle")
@@ -124,7 +175,7 @@ const render = (countries) => {
 // Data reading
 d3.csv("./src/data.csv").then((data) => {
   const countries = data.map(({ country, population, start, current }) => ({
-    country,
+    country : country,
     population: population,
     start: start,
     current: current
