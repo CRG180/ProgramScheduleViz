@@ -1,0 +1,42 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+rect {
+  fill: steelblue;
+  rx: 6;
+}
+
+text {
+  font-family: sans-serif;
+}
+
+.tick text {
+  font-size: 1.5em;
+  fill: #635f5d;
+}
+
+.tick line {
+  stroke: #c0c0bb;
+}
+
+.axis-label {
+  font-size: 4em;
+  fill: #8e8883;
+}
+
+.title {
+  font-size: 2.5em;
+  fill: #635f5d;
+}
+
+circle {
+  shape-rendering: crispEdges;
+  vector-effect: non-scaling-stroke;
+}
+circle:hover {
+  fill: purple;
+  cursor: pointer;
+}
