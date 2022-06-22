@@ -7,7 +7,7 @@ const height = 500;
 const svg = d3.select("#chart").append("svg").attr("width", width).attr("height", height);
 
 // Make a bar chart
-const render = (countries) => {
+const render = (program_data) => {
   // Margins and dimensions of the drawing area
 
   const margin = { top: 50, right: 40, bottom: 75, left: 140 };
@@ -22,13 +22,12 @@ const render = (countries) => {
 
   function dragged(event, d) {
     var dx = event.x;
-    var starting = xScale(d.start);
-    var ending = xScale(d.population);
-    //var x1New = dx > 800 ? 800 : dx < 0 ? 0 : dx;
+    var starting = xScale(d.start_year);
+    var ending = xScale(d.end_year);
     var x1New = dx > ending ? ending : dx < starting ? starting : dx;
     d3.select(this)
       .raise()
-      .attr("cx", (d.current = x1New));
+      .attr("cx", (d.current_fue = x1New));
   }
 
   function dragended() {
@@ -50,36 +49,14 @@ const render = (countries) => {
     .style("border-radius", "5px")
     .style("padding", "5px")
 
- // Three function that change the tooltip when user hover / move / leave a cell
- var mouseover = function(d) {
-  Tooltip
-    .style("opacity", 1)
-  d3.select(this)
-    .style("stroke", "black")
-    .style("opacity", 1)
-}
-var mousemove = function(d) {
-  Tooltip
-    .html("The exact value of<br>this cell is: " + d.population)
-    .style("left", (d3.mouse(this)[0]+70) + "px")
-    .style("top", (d3.mouse(this)[1]) + "px")
-}
-var mouseleave = function(d) {
-  Tooltip
-    .style("opacity", 0)
-  d3.select(this)
-    .style("stroke", "none")
-    .style("opacity", 0.8)
-}
-
             
   // Scales of the axes
 
-  let xScale = d3.scaleLinear().domain([0, 26]).range([0, innerWidth]);
+  let xScale = d3.scaleLinear().domain([2000, 2026]).range([0, innerWidth]);
 
   const yScale = d3
     .scaleBand()
-    .domain(countries.map((country) => country.country))
+    .domain(program_data.map((d) => d.program))
     .range([0, innerHeight])
     .padding(0.1);
 
@@ -90,7 +67,7 @@ var mouseleave = function(d) {
 
   // Formats the population to improve readability
   const xAxisTickFormat = (number) =>
-    d3.format(".3s")(number).replace("G", "B");
+    d3.format(".0f")(number).replace("G", "B");
 
   // Axes
   const xAxis = d3
@@ -124,12 +101,12 @@ var mouseleave = function(d) {
 
   // Plotting the bars
   g.selectAll("rect")
-    .data(countries)
+    .data(program_data)
     .enter()
     .append("rect")
-    .attr("y", (country) => yScale(country.country))
-    .attr("x", (d) => xScale(d.start))
-    .attr("width", (country) => xScale(country.population - country.start))
+    .attr("y", (d) => yScale(d.program))
+    .attr("x", (d) => xScale(d.start_year))
+    .attr("width", (d) => xScale(d.end_year) - xScale(d.start_year))
     .attr("height", yScale.bandwidth())
     .on("mouseover", function(event,d) {
       div.transition()
@@ -144,17 +121,15 @@ var mouseleave = function(d) {
         .duration(500)
         .style("opacity", 0);
       });
-    //.on("mouseover", mouseover)
-    //.on("mousemove", mousemove)
-    //.on("mouseleave", mouseleave);
+
 
   // Plotting the action point
   g.selectAll("circle")
-    .data(countries)
+    .data(program_data)
     .enter()
     .append("circle")
-    .attr("cy", (d) => yScale(d.country) + 17)
-    .attr("cx", (d) => xScale(d.current))
+    .attr("cy", (d) => yScale(d.program) + 17)
+    .attr("cx", (d) => xScale(d.current_fue))
     .attr("r", 5)
     .call(
       d3
@@ -174,11 +149,11 @@ var mouseleave = function(d) {
 
 // Data reading
 d3.csv("./src/data.csv").then((data) => {
-  const countries = data.map(({ country, population, start, current }) => ({
-    country : country,
-    population: population,
-    start: start,
-    current: current
+  const program_data= data.map(({ program, end_year, start_year, current_fue }) => ({
+    program : program,
+    end_year: end_year,
+    start_year: start_year,
+    current_fue: current_fue
   }));
-  render(countries);
+  render(program_data);
 });
